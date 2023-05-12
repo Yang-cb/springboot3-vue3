@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class Result<T> {
     private Integer code;    //状态码
-    private Boolean success; //是否登陆成功
+    private Boolean success; //是否成功
     private T data;          //数据
 
     private Result() {
