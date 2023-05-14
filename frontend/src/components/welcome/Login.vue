@@ -52,7 +52,7 @@ const login = () => {
 
         <el-row style="margin-top: 5px">
             <el-col :span="12" style="text-align: left">
-                <el-checkbox v-model="checked1" label="记住我"/>
+                <el-checkbox v-model="form.remember" label="记住我"/>
             </el-col>
             <el-col :span="12" style="text-align: right">
                 <el-link>忘记密码</el-link>
