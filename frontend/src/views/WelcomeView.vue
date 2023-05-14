@@ -11,9 +11,14 @@
             <div style="margin-top: 5px">欲买桂花同载酒，终不似，少年游。</div>
         </div>
         <!--右：表单-->
-        <div style="width: 400px;background-color: white">
+        <div style="width: 400px;background-color: white;z-index: 1">
             <!--路由-->
-            <router-view/>
+            <router-view v-slot="{ Component }">
+                <!--动画效果-->
+                <transition name="el-fade-in-linear">
+                    <component :is="Component"/>
+                </transition>
+            </router-view>
         </div>
     </div>
 </template>
