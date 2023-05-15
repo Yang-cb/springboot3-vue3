@@ -3,6 +3,8 @@
 import {ChatDotSquare, Lock, Message, User} from "@element-plus/icons-vue";
 import {reactive, ref} from "vue";
 import router from "@/router";
+import {ElMessage} from "element-plus";
+import {post} from "@/net";
 
 const form = reactive({
     username: '',
@@ -41,6 +43,26 @@ const onValidate = (prop, isValid) => {
         isEmailValid.value = isValid
 }
 
+//表单内容是否全部有效
+const formRef = ref()
+const register = () => {
+    formRef.value.validate((isValid) => {
+        if (isValid) {
+            post('/api/auth/register', {
+                username: form.username,
+                password: form.password,
+                email: form.email,
+                code: form.code
+            }, (message) => {
+                ElMessage.success(message)
+                router.push("/")
+            })
+        } else {
+            ElMessage.warning('请将注册表单内容填写完整！')
+        }
+    })
+}
+
 const rules = {
     username: [
         {validator: validateUsername, trigger: ['blur', 'change']},
@@ -62,6 +84,15 @@ const rules = {
     ]
 }
 
+//发送获取验证码请求
+const sendEmail = () => {
+    post('/api/auth/sendEmail', {
+        email: form.email
+    }, (message) => {
+        ElMessage.success(message)
+    })
+}
+
 </script>
 
 <template>
@@ -71,7 +102,7 @@ const rules = {
         </div>
 
         <div style="margin-top: 30px">
-            <el-form :model="form" :rules="rules" @validate="onValidate">
+            <el-form :model="form" :rules="rules" @validate="onValidate" ref="formRef">
                 <el-form-item prop="username">
                     <el-input v-model="form.username" type="text" placeholder="用户名">
                         <template #prefix>
@@ -120,7 +151,8 @@ const rules = {
                             </el-input>
                         </el-col>
                         <el-col :span="7">
-                            <el-button type="success" :disabled="!isEmailValid" style="text-align: right">获取验证码</el-button>
+                            <el-button @click="sendEmail" type="success" :disabled="!isEmailValid" style="text-align: right">获取验证码
+                            </el-button>
                         </el-col>
                     </el-row>
                 </el-form-item>
@@ -128,7 +160,7 @@ const rules = {
         </div>
 
         <div style="margin-top: 30px">
-            <el-button style="width: 270px" type="success" plain>立即注册</el-button>
+            <el-button @click="register" style="width: 270px" type="success" plain>立即注册</el-button>
         </div>
 
         <el-divider>

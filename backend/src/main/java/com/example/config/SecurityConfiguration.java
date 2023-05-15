@@ -51,6 +51,8 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity, PersistentTokenRepository tokenRepository) throws Exception {
         return httpSecurity.authorizeHttpRequests() //进行权限校验
+                .requestMatchers("/api/auth/**").permitAll() //验证相关的API直接放行
+
                 .anyRequest()   //所有请求
                 .authenticated() //所有人
 
