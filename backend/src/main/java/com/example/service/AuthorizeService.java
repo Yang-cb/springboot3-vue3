@@ -16,5 +16,10 @@ public interface AuthorizeService extends UserDetailsService {
      * @param httpSession 以sessionId为根据，限制发送验证码的时间
      * @return 是否发送成功
      */
-    boolean sendEmail(String email, HttpSession httpSession);
+    String sendEmail(String email, HttpSession httpSession);
+
+    /**
+     * 注册
+     */
+    String register(String username, String password, String email, String code, String httpSessionId);
 }
