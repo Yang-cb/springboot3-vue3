@@ -34,6 +34,8 @@ public class AuthorizeServiceImpl implements AuthorizeService {
     @Value("${spring.mail.username}")
     private String username;
 
+    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
     @Resource
     private UserMapper userMapper;
     @Resource
@@ -64,11 +66,13 @@ public class AuthorizeServiceImpl implements AuthorizeService {
      *
      * @param email       电子邮件地址
      * @param httpSession 以sessionId为根据，限制发送验证码的时间
+     * @param hasAccount  false 注册账户：要求该账户不存在
+     *                    true 重置密码：要求该账户存在
      * @return 是否发送成功
      */
     @Override
-    public String sendEmail(String email, HttpSession httpSession) {
-        String key = httpSession.getId() + "_" + email;
+    public String sendEmail(String email, HttpSession httpSession, boolean hasAccount) {
+        String key = httpSession.getId() + "_" + hasAccount + "_" + email;
         //验证码剩余时间不大于2分钟，可以重发验证码
         if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(key))) {
             Long expire = Optional.ofNullable(stringRedisTemplate.getExpire(key, TimeUnit.SECONDS)).orElse(0L);
@@ -76,9 +80,15 @@ public class AuthorizeServiceImpl implements AuthorizeService {
                 return "请求频繁，请稍后重试";
             }
         }
-        //邮箱已被注册，不允许注册
-        if (userMapper.findAccountByUserOrEmail(email) != null) {
+
+        Account account = userMapper.findAccountByUserOrEmail(email);
+        //false 注册账户：要求该账户不存在
+        if (!hasAccount && account != null) {
             return "该邮箱已注册";
+        }
+        //true 重置密码：要求该账户存在
+        if (hasAccount && account == null) {
+            return "该邮箱还未注册";
         }
 
         //1，生成验证码
@@ -110,27 +120,70 @@ public class AuthorizeServiceImpl implements AuthorizeService {
      */
     @Override
     public String register(String username, String password, String email, String code, String httpSessionId) {
-        String key = httpSessionId + "_" + email;
-        //没有key对应的value
-        if (!Boolean.TRUE.equals(stringRedisTemplate.hasKey(key))) {
-            return "请获取验证码";
-        }
-        String userCode = stringRedisTemplate.opsForValue().get(key);
-        //value没值
-        if (!StringUtils.hasText(userCode)) {
-            return "验证码失效，请重新获取";
-        }
-        if (!code.equals(userCode)) {
-            return "验证码错误";
+        String key = httpSessionId + "_false_" + email;
+        //验证 验证码
+        String flag = this.codeIsRight(key, code);
+        if (!"y".equals(flag)) {
+            //验证失败
+            return flag;
         }
         //密码加密
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         password = encoder.encode(password);
+        if (userMapper.findAccountByUserOrEmail(username) != null) {
+            return "该用户名已被注册";
+        }
         int line = userMapper.createAccount(email, username, password);
         if (line > 0) {
             stringRedisTemplate.delete(key);
             return "y";
         }
         return "系统繁忙，请稍后重试";
+    }
+
+    /**
+     * 重置密码
+     * 步骤1：验证电子邮件
+     */
+    @Override
+    public String reset1SendEmail(String email, String code, String httpSessionId) {
+        String key = httpSessionId + "_true_" + email;
+        String flag = this.codeIsRight(key, code);
+        if ("y".equals(flag)) {
+            stringRedisTemplate.delete(key);
+        }
+        return flag;
+    }
+
+    /**
+     * 验证验证码
+     *
+     * @param key      Rides存储的key
+     * @param userCode 用户输入的code
+     */
+    private String codeIsRight(String key, String userCode) {
+        //没有key对应的value
+        if (!Boolean.TRUE.equals(stringRedisTemplate.hasKey(key))) {
+            return "请获取验证码";
+        }
+        String rightCode = stringRedisTemplate.opsForValue().get(key);
+        //value没值
+        if (!StringUtils.hasText(rightCode)) {
+            return "验证码失效，请重新获取";
+        }
+        //用户填写错误
+        if (!rightCode.equals(userCode)) {
+            return "验证码错误";
+        }
+        return "y";
+    }
+
+    /**
+     * 重置密码
+     * 步骤2：重置密码
+     */
+    @Override
+    public boolean reset2Password(String email, String password) {
+        password = encoder.encode(password);
+        return userMapper.resetPasswordByEmail(password, email) > 0;
     }
 }

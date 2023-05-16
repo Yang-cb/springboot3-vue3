@@ -11,7 +11,7 @@ const form = reactive({
     password: '',
     password_repeat: '', //确认密码
     email: '',
-    code: '' //邮箱验证码
+    code: '' //用户填写的验证码
 })
 
 const validateUsername = (rule, value, callback) => {
@@ -45,6 +45,7 @@ const onValidate = (prop, isValid) => {
 
 //表单内容是否全部有效
 const formRef = ref()
+//注册请求
 const register = () => {
     formRef.value.validate((isValid) => {
         if (isValid) {
@@ -90,7 +91,8 @@ const coldTime = ref(0)
 const sendEmail = () => {
     coldTime.value = 60
     post('/api/auth/sendEmail', {
-        email: form.email
+        email: form.email,
+        hasAccount: false
     }, (message) => {
         ElMessage.success(message)
         setInterval(() => coldTime.value--, 1000)
@@ -104,8 +106,10 @@ const sendEmail = () => {
 
 <template>
     <div style="text-align: center;margin: 0 20px;">
-        <div style="margin-top:100px">
-            <div style="font-size: 25px">注册</div>
+        <div style="margin-top:80px">
+            <div style="font-size: 25px;font-weight: bolder">注册</div>
+            <div style="font-size: 10px;color: grey">继续，即表示您正在申请一个帐户并同意我们的用户协议和隐私政策。
+            </div>
         </div>
 
         <div style="margin-top: 30px">

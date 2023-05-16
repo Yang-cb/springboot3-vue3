@@ -4,6 +4,7 @@ import com.example.entity.Account;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 /**
  * separate-project.com.example.mapper
@@ -26,4 +27,10 @@ public interface UserMapper {
      */
     @Insert("insert into account (id,email, username, password) values (id=2,#{email}, #{username}, #{password})")
     int createAccount(String email, String username, String password);
+
+    /**
+     * 重置密码
+     */
+    @Update("update account set password = #{password} where email = #{email}")
+    int resetPasswordByEmail(String password, String email);
 }

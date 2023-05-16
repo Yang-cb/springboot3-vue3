@@ -30,7 +30,9 @@ const login = () => {
 <template>
     <div style="text-align: center;margin: 0 20px;">
         <div style="margin-top:150px">
-            <div style="font-size: 25px">登录</div>
+            <div style="font-size: 25px;font-weight: bolder">登录</div>
+            <div style="font-size: 10px;color: grey">继续，即表示您的帐户同意我们的用户协议和隐私政策。
+            </div>
         </div>
 
         <div style="margin-top: 30px">
@@ -55,7 +57,7 @@ const login = () => {
                 <el-checkbox v-model="form.remember" label="记住我"/>
             </el-col>
             <el-col :span="12" style="text-align: right">
-                <el-link>忘记密码</el-link>
+                <el-link @click="router.push('/resetPassword')">忘记密码</el-link>
             </el-col>
         </el-row>
 

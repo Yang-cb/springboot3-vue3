@@ -15,8 +15,8 @@
             <!--路由-->
             <router-view v-slot="{ Component }">
                 <!--动画效果-->
-                <transition name="el-fade-in-linear">
-                    <component :is="Component"/>
+                <transition name="el-fade-in-linear" mode="out-in">
+                    <component :is="Component" style="height: 100%"/>
                 </transition>
             </router-view>
         </div>
