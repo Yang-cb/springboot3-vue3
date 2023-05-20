@@ -1,6 +1,7 @@
 package com.example.mapper;
 
 import com.example.entity.Account;
+import com.example.entity.AccountUser;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -21,6 +22,15 @@ public interface UserMapper {
      */
     @Select("select * from account where username = #{userOrEmail} or email = #{userOrEmail}")
     Account findAccountByUserOrEmail(String userOrEmail);
+
+    /**
+     * 根据用户名或邮箱查询用户详细信息
+     *
+     * @param userOrEmail 用户名或邮箱
+     * @return 用户信息
+     */
+    @Select("select * from account where username = #{userOrEmail} or email = #{userOrEmail}")
+    AccountUser findAccountUserByUserOrEmail(String userOrEmail);
 
     /**
      * 注册

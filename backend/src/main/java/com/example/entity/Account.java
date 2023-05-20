@@ -5,7 +5,7 @@ import lombok.Data;
 /**
  * separate-project.com.example.entity
  *
- * @description 用户
+ * @description 用户基本信息
  */
 @Data
 public class Account {

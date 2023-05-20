@@ -2,8 +2,9 @@
 import {Lock, User} from "@element-plus/icons-vue";
 import {reactive} from "vue";
 import {ElMessage} from "element-plus";
-import {post} from "@/net";
+import {get, post} from "@/net";
 import router from "@/router";
+import {useCounterStore} from "@/stores/counter";
 
 // 表单信息
 const form = reactive({
@@ -11,6 +12,8 @@ const form = reactive({
     password: '',
     remember: false // 记住我选项是否勾选
 })
+
+const store = useCounterStore()
 
 const login = () => {
     if (!form.username || !form.password) {
@@ -20,9 +23,14 @@ const login = () => {
         username: form.username,
         password: form.password,
         remember: form.remember
-    }, (message) => {
-        ElMessage.success(message)
-        router.push('/index')
+    }, (data) => {
+        ElMessage.success(data)
+        get('/api/user/detail', (data) => {
+            store.auth.user = data
+            router.push('/index')
+        }, () => {
+            store.auth.user = null
+        })
     })
 }
 </script>
